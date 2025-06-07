@@ -47,7 +47,7 @@ if input_method == "Enter addresses manually":
     addresses_input_string = st.text_area(
         "Addresses (e.g., '123 Main St, City, State'):",
         height=200,
-        placeholder="712 3rd St, West Lafayette, IN 47907\n101 N Grant St, West Lafayette, IN 47906\n..."
+        placeholder="712 3rd St, West Lafayette, IN \n101 N Grant St, West Lafayette, IN\n..."
     )
 else: # Upload from text file
     uploaded_file = st.file_uploader("Upload a text file with one address per line", type=["txt"])
