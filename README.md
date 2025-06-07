@@ -1,2 +1,2 @@
-# my-vrp-solver
-An open VRP Tool with a user-friendly interface.
+VRP solver! yay :D 
+Built by Elaine Zeng
