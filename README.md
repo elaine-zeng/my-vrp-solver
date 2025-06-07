@@ -1,2 +1,2 @@
-VRP solver! yay :D \n
+VRP solver! yay :D
 Built by Elaine Zeng
