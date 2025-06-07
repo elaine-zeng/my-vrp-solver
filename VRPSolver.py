@@ -337,9 +337,37 @@ class VRPSolver:
         if not self.routes or not self.coordinates:
             return None
 
-        center_lat = np.mean([coord[0] for coord in self.coordinates])
-        center_lon = np.mean([coord[1] for coord in self.coordinates])
-        m = folium.Map(location=[center_lat, center_lon], zoom_start=zoom_start)
+        # --- Modifications Start Here ---
+
+        # 1. Collect all relevant coordinates for fitting the bounds
+        all_lats = []
+        all_lons = []
+
+        # Add all unique coordinates from self.coordinates (depot and all possible stops)
+        # It's safer to iterate through self.coordinates directly, as some might not be in a route
+        for lat, lon in self.coordinates:
+            if lat is not None and lon is not None:
+                all_lats.append(lat)
+                all_lons.append(lon)
+
+        # Add all coordinates from the polyline paths
+        for route_info in self.routes:
+            for path_coord in route_info['path_coords']:
+                all_lats.append(path_coord[0])
+                all_lons.append(path_coord[1])
+
+        # Initialize map with a default location/zoom
+        # The fit_bounds will override the zoom, but a reasonable starting point is good.
+        # If there are no coordinates, default to a generic center.
+        if all_lats and all_lons:
+            initial_center_lat = np.mean(all_lats)
+            initial_center_lon = np.mean(all_lons)
+        else:
+            initial_center_lat = 0
+            initial_center_lon = 0
+
+        m = folium.Map(location=[initial_center_lat, initial_center_lon], zoom_start=zoom_start)
+
 
         colors = ['red', 'blue', 'green', 'purple', 'orange', 'darkred', 'lightred', 'beige', 'darkblue', 'darkgreen', 'cadetblue', 'darkpurple', 'white', 'pink', 'lightblue', 'lightgreen', 'gray', 'black', 'lightgray']
 
@@ -359,7 +387,9 @@ class VRPSolver:
             # The route_node_indices includes the start depot and end depot.
             # We want to mark the intermediate customer stops.
             for j, node_idx in enumerate(route_info['route_node_indices']):
-                if node_idx != 0: # This is a non-depot (customer) stop
+                # Ensure node_idx is valid and not the depot (if it's not the first element)
+                # The first element is always the depot, so we only need to check if node_idx != 0
+                if node_idx != 0:
                     coord = self.coordinates[node_idx]
                     folium.Marker(
                         coord,
@@ -375,6 +405,22 @@ class VRPSolver:
                 opacity=0.8,
                 popup=f"Vehicle {route_info['vehicle_id']} - {route_info['distance_m']/1000:.2f} km"
             ).add_to(m)
+
+        # 2. Calculate min/max latitude and longitude for the bounds
+        if all_lats and all_lons: # Only fit bounds if there are actual coordinates
+            min_lat = np.min(all_lats)
+            max_lat = np.max(all_lats)
+            min_lon = np.min(all_lons)
+            max_lon = np.max(all_lons)
+
+            bounds = [[min_lat, min_lon], [max_lat, max_lon]]
+
+            # 3. Apply fit_bounds to the map
+            # Add some padding (in pixels) to prevent elements from being right at the edge
+            m.fit_bounds(bounds, padding=(20, 20)) # Increased padding for better visibility
+
+        # --- Modifications End Here ---
+
         return m
 
     def get_route_summary(self):
@@ -403,7 +449,7 @@ class VRPSolver:
         """
         Generates a Google Maps URL for a given route.
         """
-        base_url = "https://www.google.com/maps/dir/"
+        base_url = "https://www.google.com/maps/dir/" # Corrected base URL for directions
         
         # Use coordinates for robustness and precision.
         # Format: "lat,lon" for each point.
