@@ -184,6 +184,13 @@ if st.button("Optimize Routes"):
 
 
 # --- How to Run This App ---
+st.sidebar.markdown(
+        """
+    <a href='https://ko-fi.com/elainezeng' target='_blank'><img height='50' style='border:0px;height:50px;' 
+    src='https://storage.ko-fi.com/cdn/kofi5.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>        
+    """,
+        unsafe_allow_html=True,
+    )
 st.sidebar.header("How to Use")
 st.sidebar.markdown("""
 1.  **Input Addresses:** Type them manually (one per line) or upload a `.txt` file.
